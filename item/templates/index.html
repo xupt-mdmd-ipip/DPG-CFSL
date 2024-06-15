@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>图像分类系统</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@1.4/lib/theme-default/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- 先引入 Vue -->
+    <script src="https://unpkg.com/vue@2.5/dist/vue.js"></script>
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui@1.4/lib/index.js"></script>
+    <style>
+		body{
+		    font-family:"华文行楷";
+		}
+		.rounded-button {
+            border-radius: 20px;
+            padding: 40px 50px;
+        }
+        .main-content {
+            display: flex;
+            justify-content: center;
+            width: calc(100% - 248px);
+            height: 100vh;
+            flex-direction: column;
+            align-items: center;
+            background: url("../../static/bck.png");
+        }
+        .content-title {
+            font-size: 32px;
+            color: #fff;
+        }
+
+        .content-card {
+            display: flex;
+            align-items: center;
+            width: 80%;
+            margin: 0 auto;
+            border-radius: 15px;
+            background: #fff;
+            padding: 16px 32px;
+            box-shadow: 0 0 6px rgba(0, 21, 41, .35);
+        }
+        .card-left {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .left-title {
+            text-align: center;
+            font-size: 24px;
+        }
+
+        .card-right {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .cus-btn {
+            background-color: #DF6360;
+            border-radius: 32px;
+            border: unset;
+            color: #fff;
+            padding: 16px 32px;
+        }
+
+        .avatar-uploader {
+            display: flex;
+            justify-content: center;
+        }
+         .avatar-uploader .el-upload {
+            border: 1px dashed #d9d9d9;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+          }
+          .avatar-uploader .el-upload:hover {
+            border-color: #409EFF;
+          }
+          .avatar-uploader-icon {
+            font-size: 28px;
+            color: #8c939d;
+            width: 178px;
+            height: 178px;
+            line-height: 178px;
+            text-align: center;
+          }
+          .avatar {
+            width: 178px;
+            height: 178px;
+            display: block;
+          }
+          .layout-content {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+          }
+          .layout-menu {
+            width: 248px;
+            height: 100vh;
+            background: #eef1f6;
+          }
+          .el-menu-item > a {
+            font-size: 24px;
+            color: unset;
+            text-decoration: none;
+          }
+          .upload-demo {
+            display: flex;
+            justify-content: center;
+          }
+    </style>
+</head>
+<body>
+<div id="app">
+    <template>
+        <div class="layout-content">
+            <div class="layout-menu">
+                <el-menu
+                        default-active="2"
+                        class="el-menu-vertical-demo"
+                        background-color="#545c64"
+                        text-color="#fff"
+                        active-text-color="#ffd04b">
+                    <el-menu-item index="2">
+                        <i class="el-icon-menu"></i>
+                        <a slot="title" href="/">首页</a>
+                    </el-menu-item>
+                    <el-menu-item index="3">
+                        <i class="el-icon-document"></i>
+                        <a slot="title" href="/display">图像分类</a>
+                    </el-menu-item>
+                </el-menu>
+            </div>
+            <div class="main-content">
+                <p class="content-title">高光谱图像分类系统</p>
+                <div class="content-card">
+                    <div class="card-left">
+                        <p class="left-title">请上传图片</p>
+                        <el-upload
+                          class="upload-demo"
+                          :file-list="fileList"
+                          action="{{url_for('upload_image') }}"
+                          ref="upload"
+                          drag
+                          name="image"
+                          :auto-upload="false"
+                            :on-success="handleSuccess"
+                          >
+                          <i class="el-icon-upload"></i>
+                          <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                        </el-upload>
+                    </div>
+                    <div class="card-right">
+                        <button class="cus-btn" @click="handleUpload">执行分类</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form action="{{ url_for('upload_image') }}" method="post" enctype="multipart/form-data">
+            <input type="file" name="image" required class="rounded-button">
+            <button type="submit">执行分类</button>
+        </form>
+    </template>
+</div>
+
+<!--    <h1>请上传图像：</h1>-->
+
+<script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                imageUrl: '',
+                fileList: [],
+                message: 'Hello, Vue.js from CDN!'
+            },
+            methods: {
+                customUpload() {
+                    console.log(this.fileList)
+                    axios({
+                        url: "{{ url_for('upload_image') }}",
+                        method: 'post',
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        },
+                        data: { files: this.fileList }
+                    }).then(res => {
+                        console.log(res)
+                    }).catch(err => {
+                        console.log(err)
+                    })
+                },
+                beforeAvatarUpload(file) {
+                    this.imageUrl = URL.createObjectURL(file.raw);
+                },
+                handleUpload() {
+                  this.$refs.upload.submit()
+                },
+                handleAvatarSuccess(e) {
+                    console.log(e)
+                },
+                handleSuccess(res) {
+                    window.location.href = '/display'
+                }
+            }
+        });
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
